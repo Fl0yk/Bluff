@@ -10,4 +10,8 @@
     <Folder Include="wwwroot\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Bluff.Domain\Bluff.Domain.csproj" />
+  </ItemGroup>
+
 </Project>
