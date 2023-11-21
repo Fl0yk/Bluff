@@ -7,11 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="wwwroot\" />
+    <ProjectReference Include="..\Bluff.Domain\Bluff.Domain.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Bluff.Domain\Bluff.Domain.csproj" />
+    <Folder Include="wwwroot\" />
   </ItemGroup>
 
 </Project>
