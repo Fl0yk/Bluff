@@ -8,7 +8,7 @@ namespace Bluff.Domain
 {
     public class Client
     {
-        public int Id { get; set; }
+        public string Id { get; set; }
         public string Name { get; set; }
 
         public int[]? Cubes { get; set; }

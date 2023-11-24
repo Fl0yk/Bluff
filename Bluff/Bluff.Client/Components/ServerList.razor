@@ -1,0 +1,12 @@
+﻿<ul>
+    @foreach(string serverName in Servers)
+    {
+        <li>@serverName</li>
+    }
+</ul>
+
+@code {
+    public List<string> Servers { get; set; } = new();
+
+
+}

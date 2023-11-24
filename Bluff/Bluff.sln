@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.7.34024.191
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bluff.Client", "Bluff.Client\Bluff.Client.csproj", "{EF2BFF25-0B9C-45D0-AC39-640F60539927}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bluff.Client", "Bluff.Client\Bluff.Client.csproj", "{EF2BFF25-0B9C-45D0-AC39-640F60539927}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bluff.Server", "Bluff.Server\Bluff.Server.csproj", "{C9C027FF-F923-428F-91FF-6A27887DC571}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bluff.Server", "Bluff.Server\Bluff.Server.csproj", "{C9C027FF-F923-428F-91FF-6A27887DC571}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bluff.Domain", "Bluff.Domain\Bluff.Domain.csproj", "{2C4FADB5-6B51-4A03-8C51-14D2F2C60A25}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bluff.Domain", "Bluff.Domain\Bluff.Domain.csproj", "{2C4FADB5-6B51-4A03-8C51-14D2F2C60A25}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

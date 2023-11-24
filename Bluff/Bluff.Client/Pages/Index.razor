@@ -1,9 +1,28 @@
 ﻿@page "/"
 
-<PageTitle>Index</PageTitle>
+<PageTitle>Bluff</PageTitle>
+@*Блок для выбора правил*@
+<div style="width: 150px; height: 150px; border: 2px solid black;" @onclick="() => ruleOrServers = true">
+    <p>Правила</p>
+</div>
 
-<h1>Hello, world!</h1>
+@* Блок для выбора серверов *@
+<div style="width: 150px; height: 150px; border: 2px solid black;" @onclick="() => ruleOrServers = false">
+    <p>Сервера</p>
+</div>
 
-Welcome to your new app.
+@if(ruleOrServers)
+{
+    <Rules />
+}
 
-<SurveyPrompt Title="How is Blazor working for you?" />
+else
+{
+    <ServerList />
+}
+
+@code{
+    bool ruleOrServers = true;
+
+    
+}
