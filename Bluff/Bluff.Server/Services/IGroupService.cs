@@ -14,5 +14,9 @@ namespace Bluff.Server.Services
         public bool DeleteUserFromGame(string groupName, string clientId);
 
         public bool DeleteGame(string groupName);
+
+        public List<string> GetNamesOfAllGames();
+
+        public bool IsExistClientInGame(string groupName, string username);
     }
 }
