@@ -65,5 +65,15 @@ namespace Bluff.Server.Services
         {
             return _games.FirstOrDefault(g => g.GroupName.Equals(name));
         }
+
+        public bool IsGameReady(string groupName)
+        {
+            var game = _games.FirstOrDefault(g => g.GroupName.Equals(groupName));
+            if (game is not null)
+                return game.Clients.Count() == game.UserToStart;
+            else
+                return false;
+
+        }
     }
 }

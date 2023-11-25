@@ -1,45 +1,41 @@
 ﻿using Bluff.Domain;
+using Bluff.Server.Services;
 using Microsoft.AspNetCore.SignalR;
 
 namespace Bluff.Server.Hubs
 {
     public class InGameHub : Hub
     {
-        //
-        private List<Client> clients = new();
-
-        private Client? betAuthor;
-
-        private Bet? bet;
-
-        public int userToStart = 2;
+        IGroupService _groupService;
+        public InGameHub(IGroupService groupService) : base()
+        {
+            _groupService = groupService;
+        }
 
         /// <summary>
-        /// Метод добавляет клиента в список игроков и проверяет,
+        /// Метод добавляет клиента в список игроков и запускает процесс начала игры
         /// </summary>
         /// <param name="userName">Имя клиента, который подключается к игре</param>
-        public async Task UserConnected(string userName)
+        /// <param name="groupName">Название группы к которой подключается клиент</param>
+
+        public async Task UserConnected(string userName, string groupName)
         {
-            // если каким то образом пользователь подключился когда
-            // достигнуто максимальное количество пользователей - бросаем исключение
-            if (clients.Count == userToStart)
-                throw new Exception("Ошибка: достигнуто максимальное количество пользователей");
+            var client = new Client { Name = userName, Id = Context.ConnectionId };
 
-
-            //  добавляем нового игрока
-            clients.Add(new Client { Name = userName, Id = Context.ConnectionId });
+            //  ДОБАВИТЬ ПРОВЕРКУ НА ДОПУСТИМОСТЬ ВВЕДЕНОГО ИМЕНИ ПОЛЬЗОВАТЕЛЯ
+            _groupService.AddUserToGame(groupName, client);
 
             // если игроков достаточно для начала - начинаем игру
             // иначе - отправляем всем пользователем подключенных игроков для отрисовки
-            if (clients.Count == userToStart)
+            if (_groupService.IsGameReady(groupName))
             {
                 // ДЛЯ МИХИ - метод HandleGameStart должен спросить у игроков, готовы ли они начать
                 // если все готовы - то должен вызвать метод НАЗВАНИЕ МЕТОДА передав в него АРГУМЕНТЫ
-                Clients.All.SendAsync("HandleGameStart", clients);
+                await Clients.All.SendAsync("HandleGameStart", client);
             }
             else
             {
-                Clients.All.SendAsync("UserConnected", clients);
+                await Clients.All.SendAsync("UserConnected", client);
             }
         }
     }
