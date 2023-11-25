@@ -7,18 +7,13 @@ namespace Bluff.Server.Hubs
     {
         private List<Client> clients = new();
 
+        //Если этот хаб контролирует работу с серверами - тогда это и поле ниже не надо
         private Client? betAuthor;
         
+        //его тоже не надо
         private Bet? bet;
 
         private List<string> groups = new();
-
-        
-
-        public async Task UserConnected(string userName)
-        {
-            //Наверное, этот метод не надо
-        }
 
         /// <summary>
         /// Метод добавляет клиента в группу. Также сохраняет название созданной группы
