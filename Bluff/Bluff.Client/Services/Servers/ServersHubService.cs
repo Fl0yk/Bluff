@@ -4,8 +4,6 @@ namespace Bluff.Client.Services.Servers
 {
     public class ServersHubService : BaseConnectionService, IServersHubService
     {
-        public List<string> Servers { get; set; }
-
         public ServersHubService(IConfiguration config) 
         {
             string hubUrl = config.GetSection("ServersHubUrl")
@@ -14,15 +12,18 @@ namespace Bluff.Client.Services.Servers
             _connection = new HubConnectionBuilder()
                                 .WithUrl(hubUrl)
                                 .Build();
-
-            Servers = new();
         }
 
-        public async Task<bool> CreateGroup(string userName, int userToStart)
+        public void CreateConnection(string method, Action<List<string>> handler)
+        {
+            _connection.On(method, handler);
+        }
+
+        public async Task<bool> CreateGroup(string groupName, int userToStart)
         {
             try
             {
-                await _connection.InvokeAsync("CreateGroup", userName, userToStart);
+                await _connection.InvokeAsync("CreateGroup", groupName, userToStart);
                 return true;
             }
             catch (Exception ex)

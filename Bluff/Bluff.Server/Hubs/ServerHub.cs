@@ -27,7 +27,7 @@ namespace Bluff.Server.Hubs
             //    return;
             //}
 
-            if(_groupService.GetGameByName(groupName) is null)
+            if(_groupService.GetGameByName(groupName) is not null)
             {
                 await Clients.Client(Context.ConnectionId).SendAsync(exHandleMethodName, "Лобби с таким именем уже существует");
                 return;

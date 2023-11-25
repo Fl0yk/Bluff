@@ -1,12 +1,52 @@
-﻿<ul>
+﻿@inject IServersHubService ServersService
+
+<ul>
     @foreach(string serverName in Servers)
     {
         <li>@serverName</li>
     }
 </ul>
+Введите имя сервера:
+<br />
+<input id="groupName" type="text" required @bind-value="groupName" />
+<br />
+<br />
+    Введите коичество игроков:
+<br />
+<input type="number" max="4" min="2" id="userToStart" @bind-value="userToStart" />
+<br />
+<br />
+<input type="button" id="sendBtn" value="Создать сервер" @onclick="(async () => await CreateServer())" disabled="@isDisabled" />
+
+<Error />
 
 @code {
     public List<string> Servers { get; set; } = new();
 
+    private bool isDisabled;
 
+    private string groupName;
+    private int userToStart;
+
+    protected async override Task OnInitializedAsync()
+    {
+        isDisabled = true;
+
+        ServersService.CreateConnection("GetServerList", (List<string> servers) =>
+        {
+            Servers = servers;
+            this.StateHasChanged();
+        });
+
+        if (await ServersService.ConnectToHub())
+        {
+            isDisabled = false;
+            await ServersService.GetServerListRequest();
+        }
+    }
+
+    public async Task CreateServer()
+    {
+        await ServersService.CreateGroup(groupName, userToStart);
+    }
 }
