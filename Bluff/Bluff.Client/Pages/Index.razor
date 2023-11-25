@@ -1,6 +1,12 @@
-﻿@page "/"
+﻿<link href="css/cite.css" rel="stylesheet" />
+@page "/"
+
 
 <PageTitle>Bluff</PageTitle>
+<svg id="background">
+    <g id="hexGrid"></g>
+    @* <g id="bet"></g> *@
+</svg>
 @*Блок для выбора правил*@
 <div style="width: 150px; height: 150px; border: 2px solid black;" @onclick="() => ruleOrServers = true">
     <p>Правила</p>
@@ -25,3 +31,5 @@ else
 
     
 }
+
+<script src="js/background.js"></script>
