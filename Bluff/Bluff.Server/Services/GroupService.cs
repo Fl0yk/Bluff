@@ -75,5 +75,17 @@ namespace Bluff.Server.Services
                 return false;
 
         }
+
+        public List<string> GetNamesOfAllGames()
+        {
+            return _games.Select(g => g.GroupName).ToList();
+        }
+
+        public bool IsExistClientInGame(string groupName, string username)
+        {
+            Game curGame = _games.First(g => g.GroupName.Equals(groupName));
+
+            return curGame.Clients.FirstOrDefault(c => c.Name.Equals(username)) is null ? false : true;
+        }
     }
 }

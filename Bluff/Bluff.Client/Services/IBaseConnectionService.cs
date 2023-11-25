@@ -1,6 +1,6 @@
 ﻿namespace Bluff.Client.Services
 {
-    public interface IConnectionService
+    public interface IBaseConnectionService
     {
         /// <summary>
         /// Содержит в себе сообщение об ошибке
