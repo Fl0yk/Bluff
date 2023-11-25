@@ -3,16 +3,8 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace Bluff.Server.Hubs
 {
-    public class GameHub : Hub
+    public class ServerHub : Hub
     {
-        private List<Client> clients = new();
-
-        //Если этот хаб контролирует работу с серверами - тогда это и поле ниже не надо
-        private Client? betAuthor;
-        
-        //его тоже не надо
-        private Bet? bet;
-
         private List<string> groups = new();
 
         /// <summary>
@@ -21,8 +13,7 @@ namespace Bluff.Server.Hubs
         /// <param name="userName">Имя клиента, который создает группу</param>
         public async Task CreateGroup(string userName, string groupName)
         {
-            clients.Add(new Client { Name = userName, Id = Context.ConnectionId });
-            groups.Add(groupName);
+            
         }
         /// <summary>
         /// Получение списка всех групп, созданных на данный момент

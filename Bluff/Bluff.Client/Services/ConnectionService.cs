@@ -40,7 +40,7 @@ namespace Bluff.Client.Services
             _connection.On(method, handler);
         }
 
-        public async Task<bool> CreateServer(string username, string groupName)
+        public async Task<bool> CreateGroup(string username, string groupName)
         {
             try
             {

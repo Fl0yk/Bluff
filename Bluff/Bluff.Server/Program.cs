@@ -11,6 +11,6 @@ app.UseHttpsRedirection();
 app.UseDefaultFiles();
 app.UseStaticFiles();
 
-app.MapHub<GameHub>("/game");
+app.MapHub<ServerHub>("/game");
 
 app.Run();
