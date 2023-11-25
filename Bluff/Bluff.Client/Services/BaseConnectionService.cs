@@ -19,6 +19,9 @@ namespace Bluff.Client.Services
 
         public async Task<bool> ConnectToHub()
         {
+            if (_connection.State == HubConnectionState.Connected)
+                return true;
+
             try
             {
                 // подключемся к хабу
@@ -34,6 +37,11 @@ namespace Bluff.Client.Services
         }
 
         public void CreateConnection(string method, Action<string, string> handler)
+        {
+            _connection.On(method, handler);
+        }
+
+        public void CreateConnection(string method, Action<string> handler)
         {
             _connection.On(method, handler);
         }

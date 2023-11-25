@@ -14,6 +14,8 @@
         /// <param name="handler">Событие, которое будет происходить при вызове этого метода хабом</param>
         public void CreateConnection(string method, Action<string, string> handler);
 
+        public void CreateConnection(string method, Action<string> handler);
+
         /// <summary>
         /// Подключение к хабу
         /// </summary>

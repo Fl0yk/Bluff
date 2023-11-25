@@ -1,0 +1,21 @@
+﻿@inject IServersHubService ServersService
+
+<div>
+    <p>@ErrorMsg</p>
+</div>
+
+@code {
+    public string ErrorMsg { get; set; } = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        ServersService.CreateConnection("ExHandleMethod", GetError);
+
+        void GetError(string message)
+        {
+            ErrorMsg = message;
+            this.StateHasChanged();
+            Console.WriteLine("Get error");
+        }
+    }
+}

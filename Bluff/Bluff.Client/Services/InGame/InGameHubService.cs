@@ -1,6 +1,8 @@
-﻿namespace Bluff.Client.Services.InGame
+﻿using Bluff.Client.Services.Servers;
+
+namespace Bluff.Client.Services.InGame
 {
-    public class InGameHubService
+    public class InGameHubService : BaseConnectionService, IInGameHubService
     {
     }
 }
