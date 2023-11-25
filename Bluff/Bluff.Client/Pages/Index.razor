@@ -7,29 +7,36 @@
     <g id="hexGrid"></g>
     @* <g id="bet"></g> *@
 </svg>
+
+<img src="images/logo.jpg" id="logo"/>
+
+
 @*Блок для выбора правил*@
-<div style="width: 150px; height: 150px; border: 2px solid black;" @onclick="() => ruleOrServers = true">
+<div class="bottom choice ruls"></div>
+<div class="top choice ruls" @onclick="() => ruleOrServers = true">
     <p>Правила</p>
 </div>
 
 @* Блок для выбора серверов *@
-<div style="width: 150px; height: 150px; border: 2px solid black;" @onclick="() => ruleOrServers = false">
+<div class="bottom choice servers"></div>
+<div class="top choice servers" @onclick="() => ruleOrServers = false">
     <p>Сервера</p>
 </div>
 
-@if(ruleOrServers)
-{
-    <Rules />
-}
-else
-{
-    <ServerList />
-}
+<div class="fon">
+    @if (ruleOrServers)
+    {
+        <Rules />
+    }
+    else
+    {
+        <ServerList />
+    }
+</div>
+
 
 @code{
     bool ruleOrServers = true;
-
-    
 }
 
 <script src="js/background.js"></script>

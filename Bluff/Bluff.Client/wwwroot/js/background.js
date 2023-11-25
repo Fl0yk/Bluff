@@ -2,7 +2,7 @@ const svg = document.getElementById("hexGrid");
 const screenWidth = window.innerWidth; // Ширина экрана
 
   let rows = 19; // количество рядов
-  let cols = 21; // количество колонок
+  let cols = 42; // количество колонок
 
 //const hexWidth = screenWidth / cols; // ширина шестиугольника
 const hexWidth = window.innerWidth / cols;
