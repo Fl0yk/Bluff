@@ -13,17 +13,17 @@
 
 @*Блок для выбора правил*@
 <div class="bottom choice ruls"></div>
-<div class="top choice ruls" @onclick="() => ruleOrServers = true">
-    <p>Правила</p>
+<div class="top choice ruls highlight" id="ruls" @onclick="() => ruleOrServers = true">
+    <p class="p-choice">Правила</p>
 </div>
 
 @* Блок для выбора серверов *@
 <div class="bottom choice servers"></div>
-<div class="top choice servers" @onclick="() => ruleOrServers = false">
-    <p>Сервера</p>
+<div class="top choice servers" id="servers" @onclick="() => ruleOrServers = false">
+    <p class="p-choice">Сервера</p>
 </div>
 
-<div class="fon">
+<div class="fon highlight">
     @if (ruleOrServers)
     {
         <Rules />
@@ -40,3 +40,4 @@
 }
 
 <script src="js/background.js"></script>
+<script src="js/index.js"></script>

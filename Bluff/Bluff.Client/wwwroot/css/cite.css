@@ -14,6 +14,8 @@ body {
 #logo {
     position: absolute;
     top: 15vh;
+    width: 40vw;
+    filter: drop-shadow(10px 10px 10px black);
 }
 
 .fon {
@@ -27,18 +29,20 @@ body {
     z-index: 2;
 }
 
-pre {
-    width: 600px;
+.p-ruls {
+    width: 70%;
     font-size: 14px;
-    margin: 100px 100px;
+    margin: 100px 15%;
     color: #d0e3f7;
 }
+
 .bottom {
     box-shadow: 0 0 50px 8px black;
     z-index: 0;
 }
+
 .top {
-    z-index: 4;
+    z-index: 2;
 }
 
 .choice {
@@ -46,8 +50,8 @@ pre {
     display: flex;
     background-color: #333333;
     height: 50px;
-    width: 200px;
-    right: 46vw;
+    width: 150px;
+    right: 49.85vw;
     border-bottom-left-radius: 10px;
     border-top-left-radius: 10px;
     /*justify-content: ;*/
@@ -56,16 +60,27 @@ pre {
 }
 
 .ruls {
-    top: 15vh;
+    top: 25vh;
 }
 
 .servers {
-    top: 75vh;
+    top: 65vh;
 }
 
-p {
+.p-choice {
     color: #d0e3f7;
     font-size: 20px;
     margin: 0 20px;
 }
 
+.choice.highlight {
+    /*outline: 2px solid red;*/
+    border-bottom: 2px solid #d0e3f7;
+    border-top: 2px solid #d0e3f7;
+    border-left: 2px solid #d0e3f7;
+    z-index: 4;
+}
+
+.fon.highlight {
+    border-left: 2px solid #d0e3f7;
+}
