@@ -1,7 +1,135 @@
 ﻿@page "/game"
+@inject IInGameHubService inGameService
 
 
+<h1>@groupName</h1>
+<ul>
+    @foreach (var client in clients)
+    {
+        <li>client - @client.Name</li>
+    }
+</ul>
+
+
+Введите имя пользователя:
+<br />
+<input id="userName" type="text" required @bind-value="username" />
+<br />
+<br />
+
+<div>
+    <input type="button" id="sendBtn" value="Подключиться к игре" @onclick="(async () => await ConnectToServerRequest())" />
+</div>
+<div>
+    <input type="button" id="sendBtn" value="Готов" @onclick="(async () => await UserReadyRequest())" disabled="@(!isDisplay)" />
+</div>
+
+Готово пользователей @readyUsers
+
+@if (readyUsers == clients.Count)
+{
+    @if (isBetter)
+    {
+        <div>
+            Введите вашу ставку
+        </div>
+    }
+    else
+    {
+        <div>
+            Ожидайте пока пользователь введет ставку
+        </div>
+    }
+}
 
 @code {
+    // отображение кнопки готов
+    private bool isDisplay = false;
+    // отображение того, кто ставит
+    private bool isBetter = false;
+    private string? username;
+    // захардкоженная группа
+    private string? groupName = "aboba";
+    private List<Client> clients = new();
+    private int readyUsers = 0;
+
+    protected async override Task OnInitializedAsync()
+    {
+        // запрос готовности у всех пользователей
+        inGameService.CreateConnection("HandleUserReadyCheck", (Client client) =>
+        {
+            // добавляем подключенного пользователя
+            this.clients.Add(client);
+
+            //осуществляем запрос готовности, путем отображения кнопки
+            isDisplay = true;
+
+            this.StateHasChanged();
+        });
+
+        // обработка подключенного пользователя
+        inGameService.CreateConnection("HandleUserConnected", (Client client) =>
+        {
+            // просто добавляем подключенного пользователя
+            this.clients.Add(client);
+
+            this.StateHasChanged();
+        }); 
+
+        // обработка начала игры
+        inGameService.CreateConnection("HandleGameStart", (Client client) =>
+        {
+            // увеличиваем количество готовых пользователей(хаб вернул клиента,
+            // нажавшего готов, поэтому надо это обработать)
+            readyUsers++;
+
+            // определяем того, кто делает ставку
+            isBetter = client.Name == username;
+
+            this.StateHasChanged();
+        });
+
+        // обработка готовности игрока
+        inGameService.CreateConnection("HandleUserReady", (int userReadyAmount) =>
+        {
+            // устанавливаем количество готовых пользователей
+            readyUsers = userReadyAmount;
+
+            this.StateHasChanged();
+        });
+
+        // получение всех клиентов от сервера(нужно когда пользователь только подключается 
+        // к игре)
+        inGameService.CreateConnection("HandleGetAllClients", (List<Client> respClients) =>
+        {
+            clients = respClients;
+
+            this.StateHasChanged();
+        });
+
+
+        await inGameService.ConnectToHub();
+
+        // получаем всех пользователей
+        await inGameService.GetClientsRequest(groupName);
+    }
+
+    // подключение к хабу
+    public async Task ConnectToServerRequest()
+    {
+        await inGameService.ConnectToServerRequest(username!, groupName!);
+        this.StateHasChanged();
+    }
+
+    // обработка нажатия кнопки готов
+    public async Task UserReadyRequest()
+    {
+        // отправка запроса к хабу
+        await inGameService.UserReadyRequest(groupName!);
+
+        // перестаем отображать кнопку готов
+        isDisplay = false;
+        this.StateHasChanged();
+    }
 
 }
