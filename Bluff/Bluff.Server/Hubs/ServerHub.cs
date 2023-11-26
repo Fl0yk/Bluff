@@ -34,7 +34,6 @@ namespace Bluff.Server.Hubs
             }
 
             _groupService.CreateGame(groupName, userToStart);
-
             await Clients.All.SendAsync("GetServerList", _groupService.GetNamesOfAllGames());
         }
 

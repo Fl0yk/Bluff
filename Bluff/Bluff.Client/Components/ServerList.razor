@@ -3,7 +3,8 @@
 <ul>
     @foreach(string serverName in Servers)
     {
-        <li>@serverName</li>
+        <li><a href="game">@serverName</a></li>
+
     }
 </ul>
 Введите имя сервера:
@@ -43,6 +44,9 @@
             isDisabled = false;
             await ServersService.GetServerListRequest();
         }
+
+        // временнный код
+        await ServersService.CreateGroup("aboba", 2);
     }
 
     public async Task CreateServer()
