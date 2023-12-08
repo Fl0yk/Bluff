@@ -1,6 +1,59 @@
-﻿
+﻿@inject IInGameHubService inGameService
+
+@if(isBetter)
+{
+    <p>Введите ставку:</p>
+    <br />
+    <input id="place" type="text" required @bind-value="place" />
+    <br />
+    <input id="userName" type="text" required @bind-value="cube" />
+    <br />
+    <input type="button" id="sendBtn" value="Сделать ставку" @onclick="(PlaceBet)" />
+}
+
+<p>Последняя ставка</p>
+<p>Место: @place Значение: @cube</p>
 
 
 @code {
+    [Parameter]
+    public bool isBetter { get; set; }
+    [Parameter]
+    public string Username { get; set; }
+    [Parameter]
+    public string GroupName { get; set; }
+    private int place;
+    private int cube;
 
+    public void PlaceBet()
+    {
+        Console.WriteLine("Group: " + GroupName);
+        if(inGameService.PlaceABetRequest(GroupName, Username, cube, place).Result)
+        {
+            Console.WriteLine("Good");
+        }
+        else
+        {
+            Console.WriteLine("Bad");
+            Console.WriteLine(inGameService.ErrorMessage);
+        }
+        Console.WriteLine("After place a bet");
+    }
+
+    protected async override Task OnInitializedAsync()
+    {
+        //Подписка на получение ставки
+        inGameService.CreateConnection("GetNewBet", (Bet newBet, string nextUser) =>
+        {
+            place = newBet.Count;
+            cube = newBet.CubeValue;
+
+            isBetter = Username == nextUser;
+            Console.WriteLine("Get new bet");
+
+            this.StateHasChanged();
+        });
+
+        await inGameService.ConnectToHub();
+    }
 }

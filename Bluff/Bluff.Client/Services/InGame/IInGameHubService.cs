@@ -1,4 +1,6 @@
-﻿namespace Bluff.Client.Services.InGame
+﻿using Bluff.Domain;
+
+namespace Bluff.Client.Services.InGame
 {
     public interface IInGameHubService : IBaseConnectionService
     {
@@ -15,6 +17,8 @@
 
         public void CreateConnection(string method, Action<int> handler);
 
+        public void CreateConnection(string method, Action<Bet, string> handler);
+
         /// <summary>
         /// Метод уведомляет сервер о нажатии кнопки готов пользователем
         /// </summary>
@@ -27,5 +31,7 @@
         /// </summary>
         /// <param name="groupName">Название группы у которой будут получены все пользователи</param>
         public Task<bool> GetClientsRequest(string groupName);
+
+        public Task<bool> PlaceABetRequest(string groupName, string username, int cubeVal, int count);
     }
 }

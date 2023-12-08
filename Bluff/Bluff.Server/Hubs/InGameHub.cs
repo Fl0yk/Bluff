@@ -34,6 +34,8 @@ namespace Bluff.Server.Hubs
             else
                 await Clients.Client(Context.ConnectionId).SendAsync(exceptionHandler, "недействительное имя пользователя");
 
+            //Добавляем клиента именно к группе SignalR
+            await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
 
             // если игроков достаточно для начала - начинаем игру
             // иначе - отправляем всем пользователем подключенных игроков для отрисовки
@@ -100,6 +102,33 @@ namespace Bluff.Server.Hubs
 
             // отправка всех клиентов на фронт
             await Clients.Client(Context.ConnectionId).SendAsync("HandleGetAllClients", game!.Clients);
+        }
+
+        /// <summary>
+        /// Метод для того, чтоб сделать ставку
+        /// </summary>
+        /// <param name="groupName">Название группы, из которой сделана ставка</param>
+        /// <param name="username">Имя игрока, который сделал ставку</param>
+        /// <param name="newBet">Ставка, которую сделал игрок</param>
+        public async Task PlaceABet(string groupName, string username, Bet newBet)
+        {
+            Game? curGame = _groupService.GetGameByName(groupName);
+
+            if (curGame is null)
+            {
+                await Clients.Client(Context.ConnectionId).SendAsync(exceptionHandler, "несуществующая игра");
+                return;
+            }
+
+            //Получаем индекс следующего игрока в коллекции и его имя
+            int indexOfNextUser = (curGame.Clients.FindIndex(c => c.Name == username) + 1) % curGame.Clients.Count;
+            string nextUser = curGame.Clients[indexOfNextUser].Name;
+
+            //Сохраняем в игре новую ставку
+            curGame.Bet = newBet;
+
+            //Отправляем всем клиентам группы в метод GetNewBet сделанную ставку и имя следующего игрока
+            await Clients.Groups(curGame.GroupName).SendAsync("GetNewBet", newBet, nextUser);
         }
     }
 }

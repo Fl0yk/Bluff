@@ -1,4 +1,5 @@
 ﻿using Bluff.Client.Services.Servers;
+using Bluff.Domain;
 using Microsoft.AspNetCore.SignalR.Client;
 using System.Data.Common;
 
@@ -38,7 +39,13 @@ namespace Bluff.Client.Services.InGame
         {
             _connection.On(method, handler);
         }
+
         public void CreateConnection(string method, Action<int> handler)
+        {
+            _connection.On(method, handler);
+        }
+
+        public void CreateConnection(string method, Action<Bet, string> handler)
         {
             _connection.On(method, handler);
         }
@@ -65,6 +72,22 @@ namespace Bluff.Client.Services.InGame
                 return true;
             }
             catch (Exception ex) 
+            {
+                ErrorMessage = $"Ошибка при подключении к хабу: {ex.Message}";
+                return false;
+            }
+        }
+
+        public async Task<bool> PlaceABetRequest(string groupName, string username, int cubeVal, int count)
+        {
+            Bet bet = new() { CubeValue = cubeVal, Count = count };
+
+            try
+            {
+                await _connection.SendAsync("PlaceABet", groupName, username, bet);
+                return true;
+            }
+            catch (Exception ex)
             {
                 ErrorMessage = $"Ошибка при подключении к хабу: {ex.Message}";
                 return false;

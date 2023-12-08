@@ -1,8 +1,12 @@
-﻿@page "/game"
+﻿@page "/game/{groupName}"
 @inject IInGameHubService inGameService
 
 
 <h1>@groupName</h1>
+
+<p>
+    Игроки:
+</p>
 <ul>
     @foreach (var client in clients)
     {
@@ -10,24 +14,28 @@
     }
 </ul>
 
+@if (User is null) {
+    <p>Введите имя пользователя:</p>
+    <br />
+    <input id="userName" type="text" required @bind-value="usernameInput" />
+    <br />
+    <br />
 
-Введите имя пользователя:
-<br />
-<input id="userName" type="text" required @bind-value="username" />
-<br />
-<br />
-
-<div>
-    <input type="button" id="sendBtn" value="Подключиться к игре" @onclick="(async () => await ConnectToServerRequest())" />
-</div>
-<div>
-    <input type="button" id="sendBtn" value="Готов" @onclick="(async () => await UserReadyRequest())" disabled="@(!isDisplay)" />
-</div>
-
-Готово пользователей @readyUsers
-
-@if (readyUsers == clients.Count)
+    <div>
+        <input type="button" id="sendBtn" value="Подключиться к игре" @onclick="(() =>{ Console.WriteLine('c'.ToString()); ConnectToServerRequest().Wait();})" />
+    </div>
+}
+else if (readyUsers != clients.Count)
 {
+    <div>
+        <input type="button" id="sendBtn" value="Готов" @onclick="(async () => await UserReadyRequest())" disabled="@(!isDisplay)" />
+    </div>
+    <p>Готово пользователей @readyUsers</p>
+}
+else
+{
+    <GameBoard isBetter="@isBetter" Username="@usernameInput" GroupName="@groupName" />
+
     @if (isBetter)
     {
         <div>
@@ -43,18 +51,23 @@
 }
 
 @code {
+    // захардкоженная группа
+    [Parameter]
+    public string groupName { get; set; }
+
     // отображение кнопки готов
     private bool isDisplay = false;
     // отображение того, кто ставит
     private bool isBetter = false;
-    private string? username;
-    // захардкоженная группа
-    private string? groupName = "aboba";
+    private string? usernameInput;
+
+    public string? User { get; set; }
     private List<Client> clients = new();
     private int readyUsers = 0;
 
     protected async override Task OnInitializedAsync()
     {
+        //Console.WriteLine("Init");
         // запрос готовности у всех пользователей
         inGameService.CreateConnection("HandleUserReadyCheck", (Client client) =>
         {
@@ -84,7 +97,7 @@
             readyUsers++;
 
             // определяем того, кто делает ставку
-            isBetter = client.Name == username;
+            isBetter = client.Name == User;
 
             this.StateHasChanged();
         });
@@ -98,8 +111,8 @@
             this.StateHasChanged();
         });
 
-        // получение всех клиентов от сервера(нужно когда пользователь только подключается 
-        // к игре)
+        // получение всех клиентов от сервера 
+        // (нужно когда пользователь только подключается к игре)
         inGameService.CreateConnection("HandleGetAllClients", (List<Client> respClients) =>
         {
             clients = respClients;
@@ -117,7 +130,11 @@
     // подключение к хабу
     public async Task ConnectToServerRequest()
     {
-        await inGameService.ConnectToServerRequest(username!, groupName!);
+        if (string.IsNullOrEmpty(usernameInput))
+            return;
+
+        User = usernameInput;
+        await inGameService.ConnectToServerRequest(User!, groupName!);
         this.StateHasChanged();
     }
 
