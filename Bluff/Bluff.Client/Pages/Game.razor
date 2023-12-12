@@ -22,7 +22,7 @@
     <br />
 
     <div>
-        <input type="button" id="sendBtn" value="Подключиться к игре" @onclick="(() =>{ Console.WriteLine('c'.ToString()); ConnectToServerRequest().Wait();})" />
+        <input type="button" id="sendBtn" value="Подключиться к игре" @onclick="(() =>{ ConnectToServerRequest().Wait();})" />
     </div>
 }
 else if (readyUsers != clients.Count)
@@ -55,6 +55,8 @@ else
     [Parameter]
     public string groupName { get; set; }
 
+    private GameModel game;
+
     // отображение кнопки готов
     private bool isDisplay = false;
     // отображение того, кто ставит
@@ -67,13 +69,14 @@ else
 
     protected async override Task OnInitializedAsync()
     {
+        game = new GameModel(groupName);
         //Console.WriteLine("Init");
         // запрос готовности у всех пользователей
         inGameService.CreateConnection("HandleUserReadyCheck", (Client client) =>
         {
             // добавляем подключенного пользователя
             this.clients.Add(client);
-
+            Console.WriteLine("Handle user ready check");
             //осуществляем запрос готовности, путем отображения кнопки
             isDisplay = true;
 
@@ -85,7 +88,7 @@ else
         {
             // просто добавляем подключенного пользователя
             this.clients.Add(client);
-
+            Console.WriteLine("Handle user connected");
             this.StateHasChanged();
         }); 
 

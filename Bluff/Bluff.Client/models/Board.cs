@@ -54,88 +54,35 @@
             Cells = new Cell[30];
             InitStar();
             InitOtherCells();
-            //InitCells();
+            foreach (var cell in Cells)
+                Console.WriteLine(cell.Id + " " + cell.Value);
         }
 
-        private void InitCells()
-        {
-            int id = 0, index = 1, starInd = 1;
-
-            
-            //Заполнение верхнего ряда
-            for(; index < 8; index++)
-            {
-                //Заполняем обычные ячейки
-                Cells[3 * index / 2 - 1] = new Cell() { Id = id++, IsStar = false, Position = (0, 3 * index / 2 - 1), Value = id };
-                //В верхней строчке у нас находятся 3 звезды, так что их заполняем
-                if (starInd < 4)
-                {
-                    int pos = 3 * starInd - 2;
-                    //Console.WriteLine(pos + " " + starInd);
-                    Cells[pos] = new Cell() { Id = id++, IsStar = true, Position = (0, pos), Value = starInd++ };
-                }
-            }
-            Console.WriteLine("End up");
-            //Заполнение правого ряда
-            int rowId = 0;
-            for (; index < 12; index++)
-            {
-                //Заполняем обычные ячейки
-                Cells[3 * index / 2 - 1] = new Cell() { Id = id++, IsStar = false, Position = (rowId++, 9), Value = id };
-
-                //В прваом ряду у нас находятся 2 звезды, так что их заполняем
-                if (starInd < 6)
-                {
-                    Cells[3 * starInd - 2] = new Cell() { Id = id++, IsStar = true, Position = (rowId++, 9), Value = starInd++ };
-                }
-            }
-            Console.WriteLine("End right");
-            //Заполнение нижнего ряда
-            int columnId = 8;
-            for (; index < 18; index++)
-            {
-                //В нижней строчке у нас находятся 3 звезды, так что их заполняем
-                if (starInd < 9)
-                {
-                    Cells[3 * starInd - 2] = new Cell() { Id = id++, IsStar = true, Position = (6, columnId--), Value = starInd++ };
-                }
-                //Заполняем обычные ячейки
-                Cells[3 * index / 2 - 1] = new Cell() { Id = id++, IsStar = false, Position = (6, columnId--), Value = id };
-            }
-            Console.WriteLine("End down");
-            //Заполнение левого ряда
-            rowId = 5;
-            for (; index < 21; index++)
-            {
-                //В левом ряду у нас находятся 2 звезды, так что их заполняем
-                if (starInd < 11)
-                {
-                    Cells[3 * starInd - 2] = new Cell() { Id = id++, IsStar = true, Position = (rowId--, 0), Value = starInd++ };
-                }
-                //Заполняем обычные ячейки
-                Cells[3 * index / 2 - 1] = new Cell() { Id = id++, IsStar = false, Position = (rowId--, 0), Value = id };
-            }
-            Console.WriteLine("End left");
-
-            foreach (Cell cell in Cells)
-            {
-                Console.WriteLine(cell.Id + ": " + cell.Position + " " + cell.Value);
-            }
-        }
-
+        /// <summary>
+        /// Инициализируем звезды в нужном месте массива
+        /// </summary>
         private void InitStar()
         {
             for(int i = 1; i < 11; i++)
             {
-                Cells[3 * i - 2] = new Cell() { Id = i, IsStar = true, Position = starPositions[i], Value = i };
+                Cells[3 * i - 2] = new Cell() { Id = 3 * i - 1, 
+                                                IsStar = true, 
+                                                Position = starPositions[i], 
+                                                Value = i };
             }
         }
 
+        /// <summary>
+        /// Инициализируем все ячейки, кроме звезд
+        /// </summary>
         private void InitOtherCells()
         {
             for(int i = 1; i < 21; i++)
             {
-                Cells[3 * i / 2 - 1] = new Cell() { Id = i, IsStar = false, Position = otherPositions[i], Value = i };
+                Cells[3 * i / 2 - 1] = new Cell() { Id = 3 * i / 2, 
+                                                    IsStar = false, 
+                                                    Position = otherPositions[i], 
+                                                    Value = i };
             }
         }
 
