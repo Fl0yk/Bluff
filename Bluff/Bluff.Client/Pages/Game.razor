@@ -1,6 +1,6 @@
 ﻿@page "/game/{groupName}"
 @inject IInGameHubService inGameService
-
+@inject GameModel GameModel
 
 <h1>@groupName</h1>
 
@@ -8,13 +8,14 @@
     Игроки:
 </p>
 <ul>
-    @foreach (var client in clients)
+    @foreach (var client in GameModel.Clients)
     {
-        <li>client - @client.Name</li>
+        <li>client - @client</li>
     }
 </ul>
 
-@if (User is null) {
+@if (GameModel.CurUser is null)
+{
     <p>Введите имя пользователя:</p>
     <br />
     <input id="userName" type="text" required @bind-value="usernameInput" />
@@ -25,7 +26,7 @@
         <input type="button" id="sendBtn" value="Подключиться к игре" @onclick="(() =>{ ConnectToServerRequest().Wait();})" />
     </div>
 }
-else if (readyUsers != clients.Count)
+else if (readyUsers != GameModel.Clients.Count)
 {
     <div>
         <input type="button" id="sendBtn" value="Готов" @onclick="(async () => await UserReadyRequest())" disabled="@(!isDisplay)" />
@@ -34,20 +35,20 @@ else if (readyUsers != clients.Count)
 }
 else
 {
-    <GameBoard isBetter="@isBetter" Username="@usernameInput" GroupName="@groupName" />
-
-    @if (isBetter)
+    @if (GameModel.State == GameState.Bet)
     {
         <div>
-            Введите вашу ставку
+            Введите вашу ставку:
         </div>
     }
     else
     {
         <div>
-            Ожидайте пока пользователь введет ставку
+            Ожидайте, пока пользователь введет ставку
         </div>
     }
+
+    <GameBoard />
 }
 
 @code {
@@ -55,27 +56,21 @@ else
     [Parameter]
     public string groupName { get; set; }
 
-    private GameModel game;
-
     // отображение кнопки готов
     private bool isDisplay = false;
-    // отображение того, кто ставит
-    private bool isBetter = false;
     private string? usernameInput;
-
-    public string? User { get; set; }
-    private List<Client> clients = new();
     private int readyUsers = 0;
 
     protected async override Task OnInitializedAsync()
     {
-        game = new GameModel(groupName);
+        GameModel.GameName = groupName;
         //Console.WriteLine("Init");
         // запрос готовности у всех пользователей
         inGameService.CreateConnection("HandleUserReadyCheck", (Client client) =>
         {
             // добавляем подключенного пользователя
-            this.clients.Add(client);
+            //this.clients.Add(client);
+            GameModel.Clients.Add(client.Name);
             Console.WriteLine("Handle user ready check");
             //осуществляем запрос готовности, путем отображения кнопки
             isDisplay = true;
@@ -87,7 +82,7 @@ else
         inGameService.CreateConnection("HandleUserConnected", (Client client) =>
         {
             // просто добавляем подключенного пользователя
-            this.clients.Add(client);
+            GameModel.Clients.Add(client.Name);
             Console.WriteLine("Handle user connected");
             this.StateHasChanged();
         }); 
@@ -100,7 +95,7 @@ else
             readyUsers++;
 
             // определяем того, кто делает ставку
-            isBetter = client.Name == User;
+            GameModel.Start(client.Name);
 
             this.StateHasChanged();
         });
@@ -118,7 +113,8 @@ else
         // (нужно когда пользователь только подключается к игре)
         inGameService.CreateConnection("HandleGetAllClients", (List<Client> respClients) =>
         {
-            clients = respClients;
+            //clients = respClients;
+            GameModel.Clients = respClients.Select(c => c.Name).ToList();
 
             this.StateHasChanged();
         });
@@ -135,9 +131,12 @@ else
     {
         if (string.IsNullOrEmpty(usernameInput))
             return;
+        GameModel.CurUser = usernameInput;
 
-        User = usernameInput;
-        await inGameService.ConnectToServerRequest(User!, groupName!);
+        await inGameService.ConnectToServerRequest(GameModel.CurUser!, groupName!);
+
+        GameModel.CurUser = usernameInput;
+
         this.StateHasChanged();
     }
 

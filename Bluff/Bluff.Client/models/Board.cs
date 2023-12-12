@@ -101,5 +101,30 @@
 
             return matrix;
         }
+
+        /// <summary>
+        /// Возвращает массив допустимых ячеек для выбора
+        /// </summary>
+        /// <param name="minId">Минимальный Id ячейки, которую можно выбрать</param>
+        /// <param name="isStar">Является ли выбранный кубик звездой</param>
+        /// <returns></returns>
+        public Cell[] AvailableCells(int minId, bool isStar)
+        {
+            Cell[] cells = this.Cells.ToArray();
+
+            foreach(Cell cell in cells)
+            {
+                if(cell.Id >= minId && cell.IsStar == isStar)
+                {
+                    cell.IsAvailable = true;
+                }
+                else
+                {
+                    cell.IsAvailable = false;
+                }
+            }
+
+            return cells;
+        }
     }
 }

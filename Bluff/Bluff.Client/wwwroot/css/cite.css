@@ -84,3 +84,41 @@ body {
 .fon.highlight {
     border-left: 2px solid #d0e3f7;
 }
+
+div.container {
+    display: grid;
+    grid-template-columns: repeat(10, 50px);
+    grid-template-rows: repeat(7, 50px);
+    grid-gap: 5px;
+}
+
+div.item {
+    background-color: rgb(156, 177, 208);
+    box-shadow: 0px 0px 0px 5px rgb(49, 76, 129);
+    text-align: center;
+    vertical-align: middle;
+}
+
+div.item.available {
+    background-color: rgb(80, 101, 225);
+    cursor: pointer;
+}
+
+div.center {
+    grid-column: 4/ 8;
+    grid-row: 3/ 6;
+    border: 4px solid rgb(49, 76, 129);
+    border-radius: 10px;
+    text-align: center;
+}
+
+div.cube {
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+    margin: 8px;
+    cursor: pointer;
+    text-align: center;
+    border: 3px solid black;
+    border-radius: 6px;
+}
