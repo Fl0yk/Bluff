@@ -29,6 +29,7 @@ namespace Bluff.Client.models
 
         public GameModel() 
         {
+            _gameName = string.Empty;
             GameBoard = new Board();
             Clients = new();
             State = GameState.WaitStart;
