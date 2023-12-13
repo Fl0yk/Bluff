@@ -1,38 +1,41 @@
 ﻿@inject IInGameHubService InGameService
 @inject GameModel GameModel
 
-@if (GameModel.State == GameState.Bet && cubeSelected)
+@if (GameModel.State == GameState.Bet && cubeSelected) @* Если игрок делает ставку и значение кубика уже выбрал *@
 {
     <div class="container">
+        @* Заполняю поле так, чтоб были выделенные допустимые ячейки *@
         @foreach (var cell in GameModel.GameBoard.AvailableCells(minSelectCount, selectedIsStar))
         {
             <div class="item @((cell.IsAvailable && cell.IsStar == selectedIsStar) ? "available" : "")"
                  style="grid-column: @(cell.Position.column + 1)/ @(cell.Position.column + 2);
                                     grid-row: @(cell.Position.row + 1)/ @(cell.Position.row + 2);"
-                 @onclick="() => SelectCount(cell.Id)">
+                 @onclick="() => SelectCount(cell.Id, cell.Value, cell.IsStar)">
 
                 @cell.Value
-                @if (cell.IsStar)
+                @if (cell.IsStar) @* Если звезда, то пишу звездочку *@
                 {
                     <p>*</p>
                 }
             </div>
         }
+        @* В центре при выборе ячейки пишем значение кубика *@
         <div class="center">
-            @cube
+            <p>Выбранное значение: @(cube + 1)</p>
         </div>
     </div>
 }
-else
+else 
+@* Если игрок ожидает ставку или еще не выбрал значение кубика *@
 {
     <div class="container">
         @foreach (var cell in GameModel.GameBoard.Cells)
         {
             <div class="item" style="grid-column: @(cell.Position.column + 1)/ @(cell.Position.column + 2);
                                 grid-row: @(cell.Position.row + 1)/ @(cell.Position.row + 2);">
-                @if(count == cell.Id)
+                @if(curId == cell.Id)
                 {
-                    <p>Тут @cube)</p>
+                    <p>Тут @(cube + 1))</p>
                 }
                 else
                 {
@@ -44,9 +47,11 @@ else
                 }
             </div>
         }
+        @* Блок с областью в центре *@
         <div class="center">
-            @if (GameModel.State == GameState.Bet)
-            {
+            @if (GameModel.State == GameState.Bet) @* Если игрок делает ставку, то даем выбрать кубик *@
+            { 
+                @* В цикле заполняем кубики, в которых значение - число *@
                 @for (int i = 1; i < 6; i++)
                 {
                     int ind = i - 1;
@@ -54,18 +59,19 @@ else
                         @i
                     </div>
                 }
+                @* Отдельно сделал звездочку *@
                 <div class="cube" @onclick="() => SelectCube(5)">
                     *
                 </div>
                 <br />
             }
-            else if(GameModel.State == GameState.EndGame)
+            else if(GameModel.State == GameState.EndGame) @* Если игра закончилась, то пишем победителя *@
             {
                 <p>Победил @GameModel?.WinnerName</p>
             }
-            else
+            else @* Во всех остальных случаях выводим количество кубиков в игре *@
             {
-                @GameModel.CountOfCubes
+                <p>Кубиков в игре: @GameModel.CountOfCubes</p>
             }
         </div>
     </div>
@@ -73,25 +79,24 @@ else
 
 
 @code {
-    private int count;
-    private int cube;
-    private bool selectedIsStar;
-    private int minSelectCount;
+    private int count; //Количество значений(для ставки)
+    private int curId; //Id поля, на котором сейчас
+    private int cube; //Значение кубика(для ставки)
+    private bool selectedIsStar; //Является ли выбранный кубик звездой
+    private int minSelectCount; //Определяем минимальный номер ячейки, которую можно выбрать
+    private bool cubeSelected = false; //Проверяем, выбрал ли игрок кубик
 
-    private bool cubeSelected = false;
-
+    //Метод, чтоб сделать ставку
     public void PlaceBet()
     {
-        if(InGameService.PlaceABetRequest(GameModel.GameName, GameModel.CurUser!, cube, count).Result)
+        if(InGameService.PlaceABetRequest(GameModel.GameName, GameModel.CurUser!, cube, count, curId).Result)
         {
             Console.WriteLine("Good");
         }
         else
         {
-            Console.WriteLine("Bad");
             Console.WriteLine(InGameService.ErrorMessage);
         }
-        Console.WriteLine("After count a bet");
     }
 
     protected async override Task OnInitializedAsync()
@@ -103,6 +108,16 @@ else
             GameModel.GetNewBet(newBet, nextUser);
             count = newBet.Count;
             cube = newBet.CubeValue;
+            curId = newBet.CellId;
+
+            this.StateHasChanged();
+        });
+
+        InGameService.CreateConnection("ResetBet", () =>
+        {
+            count = 0;
+            cube = 0;
+            curId = 0;
 
             this.StateHasChanged();
         });
@@ -110,22 +125,25 @@ else
         await InGameService.ConnectToHub();
     }
 
+    //Метод для выбора кубика
     public void SelectCube(int cubeValue)
     {
         //Если выбрали больше, чем было, то можно выбрать ту же ячейку
-        minSelectCount = (cubeValue > cube) ? count : count + 1;
-        
+        minSelectCount = (cubeValue > cube) ? curId : curId + 1;
+
         cube = cubeValue;
         cubeSelected = true;
         selectedIsStar = cube == 5;
     }
 
-    public void SelectCount(int cellId)
+    //ВЫбираем позицию
+    public void SelectCount(int cellId, int value, bool isStar)
     {
-        if (cellId < minSelectCount)
+        if (cellId < minSelectCount || selectedIsStar != isStar)
             return;
 
-        count = cellId;
+        curId = cellId;
+        count = value;
         PlaceBet();
         cubeSelected = false;
     }

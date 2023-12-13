@@ -9,7 +9,7 @@ namespace Bluff.Domain
     public class Bet
     {
         public int CubeValue { get; set; }
-
+        public int CellId { get; set; }
         public int Count { get; set; }
     }
 }

@@ -51,6 +51,11 @@ namespace Bluff.Client.Services.InGame
             _connection.On(method, handler);
         }
 
+        public void CreateConnection(string method, Action handler)
+        {
+            _connection.On(method, handler);
+        }
+
         public async Task<bool> UserReadyRequest(string groupName)
         {
             try
@@ -79,9 +84,9 @@ namespace Bluff.Client.Services.InGame
             }
         }
 
-        public async Task<bool> PlaceABetRequest(string groupName, string username, int cubeVal, int count)
+        public async Task<bool> PlaceABetRequest(string groupName, string username, int cubeVal, int count, int id)
         {
-            Bet bet = new() { CubeValue = cubeVal, Count = count };
+            Bet bet = new() { CubeValue = cubeVal, Count = count, CellId = id };
 
             try
             {
@@ -91,6 +96,21 @@ namespace Bluff.Client.Services.InGame
             catch (Exception ex)
             {
                 ErrorMessage = $"Ошибка при подключении к хабу: {ex.Message}";
+                return false;
+            }
+        }
+
+        public async Task<bool> Dispute(string groupName, string username)
+        {
+            try
+            {
+                await _connection.SendAsync("ChallengeBet", groupName, username);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                ErrorMessage = $"Ошибка при подключении к хабу: {ex.Message}";
+                await Console.Out.WriteLineAsync(ErrorMessage);
                 return false;
             }
         }

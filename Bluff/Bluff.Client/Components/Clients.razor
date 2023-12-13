@@ -1,0 +1,24 @@
+﻿@inject GameModel GameModel
+
+@foreach(Player player in GameModel.Clients)
+{
+    <hr />
+    <h3>@player.Name</h3>
+    <p>@player.CubeCount</p>
+    @if (GameModel.CurUser == player.Name || GameModel.State == GameState.Dispute)
+    {
+        <p>@string.Join(' ', player.GetNormalizeCubes())</p>
+    }
+    else
+    {
+        <p>Не покажу)</p>
+    }
+    <hr />
+}
+
+@code {
+    protected override void OnInitialized()
+    {
+        GameModel.UpdatePlayers += this.StateHasChanged;
+    }
+}

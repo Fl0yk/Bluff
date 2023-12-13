@@ -19,6 +19,8 @@ namespace Bluff.Client.Services.InGame
 
         public void CreateConnection(string method, Action<Bet, string> handler);
 
+        public void CreateConnection(string method, Action handler);
+
         /// <summary>
         /// Метод уведомляет сервер о нажатии кнопки готов пользователем
         /// </summary>
@@ -32,6 +34,8 @@ namespace Bluff.Client.Services.InGame
         /// <param name="groupName">Название группы у которой будут получены все пользователи</param>
         public Task<bool> GetClientsRequest(string groupName);
 
-        public Task<bool> PlaceABetRequest(string groupName, string username, int cubeVal, int count);
+        public Task<bool> PlaceABetRequest(string groupName, string username, int cubeVal, int count, int id);
+
+        public Task<bool> Dispute(string groupName, string username);
     }
 }

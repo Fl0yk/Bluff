@@ -14,7 +14,6 @@ for (let row = 0; row < rows; row++) {
 
         const x = row % 2 === 0 ? col * hexWidth * 1.735 : col * hexWidth * 1.735 + (hexWidth * 0.86);
         const y = row * hexHeight * 1.5;
-        console.log('before points');
         const points = setPosition(x, y);
         hexagon.setAttribute("points", points.join(" "));
         hexagon.setAttribute("style", "fill:#333333;stroke:black;stroke-width:4");

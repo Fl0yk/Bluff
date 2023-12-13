@@ -4,17 +4,7 @@
 
 <h1>@groupName</h1>
 
-<p>
-    Игроки:
-</p>
-<ul>
-    @foreach (var client in GameModel.Clients)
-    {
-        <li>client - @client</li>
-    }
-</ul>
-
-@if (GameModel.CurUser is null)
+@if (GameModel.CurUser is null) @* Если польльзователь еще не ввел имя *@
 {
     <p>Введите имя пользователя:</p>
     <br />
@@ -26,60 +16,85 @@
         <input type="button" id="sendBtn" value="Подключиться к игре" @onclick="(() =>{ ConnectToServerRequest().Wait();})" />
     </div>
 }
-else if (readyUsers != GameModel.Clients.Count)
+else 
 {
-    <div>
-        <input type="button" id="sendBtn" value="Готов" @onclick="(async () => await UserReadyRequest())" disabled="@(!isDisplay)" />
-    </div>
-    <p>Готово пользователей @readyUsers</p>
-}
-else
-{
-    @if(GameModel.State == GameState.ChangeMenu)
-    {
-        <button @onclick="StartBetEvent">Cтавка</button>
-        <button>Оспаривание</button>
-        <br />
-        <br />
-    }
-    else if (GameModel.State == GameState.Bet)
+    @* Тут список всех игроков *@
+    <p>
+        Игроки:
+    </p>
+    <ul>
+        @foreach (var client in GameModel.Clients)
+        {
+            <li>client - @client.Name</li>
+        }
+    </ul>
+    @if (readyUsers != GameModel.Clients.Count) @* Если пользователь подключился, но игроков для начала недостаточно *@
     {
         <div>
-            Сделайте вашу ставку:
+            <input type="button" id="sendBtn" value="Готов" @onclick="(async () => await UserReadyRequest())" disabled="@(!isDisplay)" />
         </div>
+        <p>Готово пользователей @readyUsers</p>
     }
-    else
+    else @* Если пользователь подключился и игра уже началась *@
     {
-        <div>
-            Ожидайте, пока пользователь введет ставку.
-        </div>
-    }
+        @if(GameModel.State == GameState.ChangeMenu) @* Пользователь выбирает, как ему походить(2 кнопки) *@
+        {
+            <button @onclick="StartBetEvent">Cтавка</button>
+            <button @onclick="DisputeEvent">Оспаривание</button>
+            <br />
+            <br />
+        }
+        else if (GameModel.State == GameState.Bet) @* Пользователь делает ставку на поле *@
+        {
+            <div>
+                Сделайте вашу ставку:
+            </div>
+        }
+        else if (GameModel.State == GameState.Bet) @* Игра окончена *@
+        {
+            <div>
+                Игра завершилась
+            </div>
+        }
+        else  @* Пользователь ожидает, пока другой игрок сделает ставку *@
+        {
+            <div>
+                Ожидайте, пока пользователь введет ставку.
+            </div>
+        }
 
-    <GameBoard />
+        @* Компонент по отрисовке поля(там и логика выполненитя ставки) *@
+        <GameBoard />
+        <br />
+        <br />
+        <Clients />
+    }
 }
 
 @code {
     // захардкоженная группа
     [Parameter]
-    public string groupName { get; set; }
+    public string groupName { get; set; } // Название группы
 
     // отображение кнопки готов
     private bool isDisplay = false;
-    private string? usernameInput;
-    private int readyUsers = 0;
+    private bool isDisplayAllCubes = false;
+    private string? usernameInput; //Для привязки ввода имени пользователя
+    private int readyUsers = 0; //Количество готовых игроков
+
 
     protected async override Task OnInitializedAsync()
     {
         GameModel.GameName = groupName;
         GameModel.UpdatePage += this.StateHasChanged;
-        //Console.WriteLine("Init");
+
         // запрос готовности у всех пользователей
-        inGameService.CreateConnection("HandleUserReadyCheck", (Client client) =>
+        inGameService.CreateConnection("HandleUserReadyCheck", async (Client client) =>
         {
             // добавляем подключенного пользователя
             //this.clients.Add(client);
-            GameModel.Clients.Add(client.Name);
-            Console.WriteLine("Handle user ready check");
+            //GameModel.Clients.Add(client.Name);
+            await inGameService.GetClientsRequest(GameModel.GameName);
             //осуществляем запрос готовности, путем отображения кнопки
             isDisplay = true;
 
@@ -90,20 +105,20 @@ else
         inGameService.CreateConnection("HandleUserConnected", (Client client) =>
         {
             // просто добавляем подключенного пользователя
-            GameModel.Clients.Add(client.Name);
-            Console.WriteLine("Handle user connected");
+            //GameModel.Clients.Add(client.Name);
+            inGameService.GetClientsRequest(GameModel.GameName).Wait();
+
             this.StateHasChanged();
         }); 
 
         // обработка начала игры
         inGameService.CreateConnection("HandleGameStart", (Client client) =>
         {
-            // увеличиваем количество готовых пользователей(хаб вернул клиента,
-            // нажавшего готов, поэтому надо это обработать)
-            readyUsers++;
-
+            Console.WriteLine("In handle game start");
             // определяем того, кто делает ставку
             GameModel.Start(client.Name);
+            // получаем всех пользователей
+            inGameService.GetClientsRequest(GameModel.GameName).Wait();
 
             this.StateHasChanged();
         });
@@ -121,17 +136,22 @@ else
         // (нужно когда пользователь только подключается к игре)
         inGameService.CreateConnection("HandleGetAllClients", (List<Client> respClients) =>
         {
-            //clients = respClients;
-            GameModel.Clients = respClients.Select(c => c.Name).ToList();
-
+            GameModel.UpdatePlayersList(respClients);
             this.StateHasChanged();
         });
 
+        inGameService.CreateConnection("HandleWinner", (string winnerName) =>
+        {
+            GameModel.WinnerName = winnerName;
+            GameModel.State = GameState.EndGame;
+            Console.WriteLine(winnerName);
+            this.StateHasChanged();
+        });
 
         await inGameService.ConnectToHub();
 
         // получаем всех пользователей
-        await inGameService.GetClientsRequest(groupName);
+        await inGameService.GetClientsRequest(GameModel.GameName);
     }
 
     // подключение к хабу
@@ -159,6 +179,7 @@ else
         this.StateHasChanged();
     }
 
+    //событие, когда выбирают ставку
     public void StartBetEvent()
     {
         if(GameModel.State == GameState.ChangeMenu)
@@ -169,7 +190,11 @@ else
 
     public void DisputeEvent()
     {
-        
+        if (GameModel.Bet is null)
+            return;
+
+        inGameService.Dispute(GameModel.GameName, GameModel.CurUser!);
+        GameModel.State = GameState.Dispute;
     }
 
 }

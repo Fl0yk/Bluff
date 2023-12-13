@@ -9,6 +9,8 @@ namespace Bluff.Client.models
 
         public event Action UpdatePage;
 
+        public event Action UpdatePlayers;
+
         private string _gameName;
         //Вы спросите, зачем
         //А я отвечу, чтоб только 1 раз инициализировать 
@@ -27,7 +29,7 @@ namespace Bluff.Client.models
         //Имя победителя
         public string? WinnerName {  get; set; }
         //Храним имена клиентов
-        public List<string> Clients { get; set; }
+        public List<Player> Clients { get; set; }
         private GameState _state;
         public GameState State 
         { get
@@ -40,6 +42,7 @@ namespace Bluff.Client.models
                 {
                     this._state= value;
                     UpdatePage?.Invoke();
+                    UpdatePlayers?.Invoke();
                 }
             }
         }
@@ -64,16 +67,38 @@ namespace Bluff.Client.models
             {
                 State = GameState.ExpectBet;
             }
+
+            Bet = null;
+            UpdatePage?.Invoke();
         }
 
         public void GetNewBet(Bet newBet, string nextUser)
         {
             Bet = newBet;
-            
+
             if (CurUser == nextUser)
                 State = GameState.ChangeMenu;
             else
                 State = GameState.ExpectBet;
+        }
+
+        public void UpdatePlayersList(List<Domain.Client> clients)
+        {
+            Clients = new List<Player>(clients.Select(c => new Player()
+            {
+                Name = c.Name,
+                CubeCount = c.CubesCount,
+                Cubes = c.Cubes.ToArray()
+            }));
+
+            CountOfCubes = 0;
+
+            foreach (Player player in Clients)
+            {
+                CountOfCubes += player.CubeCount;
+            }
+
+            UpdatePlayers?.Invoke();
         }
     }
 
@@ -83,6 +108,7 @@ namespace Bluff.Client.models
         ChangeMenu,
         ExpectBet,
         Bet,
+        Dispute,
         EndGame
     }
 

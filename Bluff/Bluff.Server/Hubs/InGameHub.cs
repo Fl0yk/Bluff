@@ -81,8 +81,9 @@ namespace Bluff.Server.Hubs
             // перебираем всех клиентов
             foreach (var client in game.Clients)
             {
+                client.Cubes = new int[6];
                 // рандомим для них значения кубиков
-                for (int i = 0; i < 5; i++)
+                for (int i = 0; i < client.CubesCount; i++)
                     // индекс - значение выпавшее на кубике
                     // значение по индексу - сколько раз он выпал
                     client.Cubes[random.Next() % 6]++;
@@ -140,18 +141,20 @@ namespace Bluff.Server.Hubs
         /// Метод, оспоривающий ставку
         /// </summary>
         /// <param name="groupName">Название группы, в которой оспаривается ставка</param>
-        /// <param name="BetterUsername">Имя игрока, который сделал ставку</param>
+        /// <param name="curGame.BetAuthor.Name">Имя игрока, который сделал ставку</param>
         /// <param name="ChallengerUsername">Имя игрока, который оспаривает ставку</param>
         /// <param name="bet">Оспариваемая ставка</param>
-        public async Task ChallengeBet(string groupName, string BetterUsername, string ChallengerUsername, Bet bet)
+        public async Task ChallengeBet(string groupName, string ChallengerUsername)
         {
             Game? curGame = _groupService.GetGameByName(groupName);
 
-            if (curGame is null)
+            if (curGame is null || curGame.Bet is null)
             {
                 await Clients.Client(Context.ConnectionId).SendAsync(exceptionHandler, "несуществующая игра");
                 return;
             }
+            
+            Bet bet = curGame.Bet!;
 
             // число выпавших кубиков, указанных в ставке
             int appearedCubesNumber = 0;
@@ -194,14 +197,14 @@ namespace Bluff.Server.Hubs
                     return;
                 }
 
-                TurnWinner = curGame.Clients.FirstOrDefault(c => c.Name == BetterUsername);
+                TurnWinner = curGame.Clients.FirstOrDefault(c => c.Name == curGame.BetAuthor!.Name);
                 // отнимаем кубики
                 challenger.CubesCount -= difference;
             }
             else if (difference < 0) 
             {
                 // кубики теряет ставивший
-                var better = curGame.Clients.Where(c => c.Name == BetterUsername).FirstOrDefault();
+                var better = curGame.Clients.Where(c => c.Name == curGame.BetAuthor!.Name).FirstOrDefault();
                 if (better is null)
                 {
                     await Clients.Client(Context.ConnectionId).SendAsync(exceptionHandler, "несуществующее имя ставщика");
@@ -216,10 +219,10 @@ namespace Bluff.Server.Hubs
             {
                 // кубики теряют все кроме ставившего
                 foreach (var client in curGame.Clients)
-                    if (client.Name != BetterUsername)
+                    if (client.Name != curGame.BetAuthor!.Name)
                         client.CubesCount--;
 
-                TurnWinner = curGame.Clients.FirstOrDefault(c => c.Name == BetterUsername);
+                TurnWinner = curGame.Clients.FirstOrDefault(c => c.Name == curGame.BetAuthor!.Name);
             }
 
 
@@ -239,11 +242,10 @@ namespace Bluff.Server.Hubs
 
             if (playersLeft > 1)
             {
-                // отбор начинающего ход
-
-                // поиск следующего игрока писать сюда
-
+                RandomUserCubes(curGame);
+                Thread.Sleep(4000);
                 await Clients.Groups(curGame.GroupName).SendAsync("HandleGameStart", TurnWinner);
+                await Clients.Groups(curGame.GroupName).SendAsync("ResetBet");
             }
             else if (playersLeft == 1)
             {
