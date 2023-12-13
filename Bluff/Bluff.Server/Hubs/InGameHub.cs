@@ -70,8 +70,11 @@ namespace Bluff.Server.Hubs
                 // рандомим кубики
                 RandomUserCubes(game);
 
+                // получаем того, кто будет начинать ход
+                var turnBeginner = game.Clients[game.TurnBeginnerIndex];
+
                 // начинаем игру
-                await Clients.Groups(game.GroupName).SendAsync("HandleGameStart", game.Clients.First());
+                await Clients.Groups(game.GroupName).SendAsync("HandleGameStart", turnBeginner);
             }
             else 
                 // возвращаем количество готовых пользователей
@@ -200,21 +203,41 @@ namespace Bluff.Server.Hubs
 
             // проверка на необходиость завершения игры(остался один игрок с кубиками)
             int playersLeft = 0;
+            // Храним возможного победителя, чтобы его потом не искать
+            Client? possibleWinner = null;
 
             foreach (var client in curGame.Clients)
             {
                 if (client.CubesCount > 0)
+                {
                     playersLeft++;
+                    possibleWinner = client;
+                }
             }
 
             if (playersLeft > 1)
             {
-                // отбор следующего начинающего игрока
-                //await Clients.Groups(curGame.GroupName).SendAsync("HandleGameStart", curGame.);
+                // отбор начинающего ход
+
+                // Получаем индекс следующего игрока в коллекции и его имя
+                int indexOfNextUser = (curGame.TurnBeginnerIndex + 1) % curGame.Clients.Count;
+
+                // Посокльку следующий игрок может выбыть, то
+                // ищем следующего действующего игрока(количество кубиков больше 0).
+                // Предполагается, что даже если пользователь выйдет в списке клиентов
+                // останется сущность с 0 кубиков.
+                while (curGame.Clients[indexOfNextUser].CubesCount <= 0)
+                    indexOfNextUser = (indexOfNextUser + 1) % curGame.Clients.Count;
+
+                await Clients.Groups(curGame.GroupName).SendAsync("HandleGameStart", curGame.Clients[indexOfNextUser]);
             }
             else if (playersLeft == 1)
             {
+                if (possibleWinner is null)
+                    throw new Exception("Уххх, что то пошло по бороде. Победитель не может быть null в этом методе");
+
                 // вызов метода отображения победителя
+                await Clients.Groups(curGame.GroupName).SendAsync("HandleWinner", possibleWinner!.Name);
             }
             else
             {
