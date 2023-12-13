@@ -35,16 +35,23 @@ else if (readyUsers != GameModel.Clients.Count)
 }
 else
 {
-    @if (GameModel.State == GameState.Bet)
+    @if(GameModel.State == GameState.ChangeMenu)
+    {
+        <button @onclick="StartBetEvent">Cтавка</button>
+        <button>Оспаривание</button>
+        <br />
+        <br />
+    }
+    else if (GameModel.State == GameState.Bet)
     {
         <div>
-            Введите вашу ставку:
+            Сделайте вашу ставку:
         </div>
     }
     else
     {
         <div>
-            Ожидайте, пока пользователь введет ставку
+            Ожидайте, пока пользователь введет ставку.
         </div>
     }
 
@@ -64,6 +71,7 @@ else
     protected async override Task OnInitializedAsync()
     {
         GameModel.GameName = groupName;
+        GameModel.UpdatePage += this.StateHasChanged;
         //Console.WriteLine("Init");
         // запрос готовности у всех пользователей
         inGameService.CreateConnection("HandleUserReadyCheck", (Client client) =>
@@ -133,7 +141,7 @@ else
             return;
         GameModel.CurUser = usernameInput;
 
-        await inGameService.ConnectToServerRequest(GameModel.CurUser!, groupName!);
+        await inGameService.ConnectToServerRequest(GameModel.CurUser!, GameModel.GameName);
 
         GameModel.CurUser = usernameInput;
 
@@ -149,6 +157,19 @@ else
         // перестаем отображать кнопку готов
         isDisplay = false;
         this.StateHasChanged();
+    }
+
+    public void StartBetEvent()
+    {
+        if(GameModel.State == GameState.ChangeMenu)
+        {
+            GameModel.State = GameState.Bet;
+        }
+    }
+
+    public void DisputeEvent()
+    {
+        
     }
 
 }

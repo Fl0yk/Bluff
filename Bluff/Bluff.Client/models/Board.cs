@@ -54,8 +54,8 @@
             Cells = new Cell[30];
             InitStar();
             InitOtherCells();
-            foreach (var cell in Cells)
-                Console.WriteLine(cell.Id + " " + cell.Value);
+            //foreach (var cell in Cells)
+                //Console.WriteLine(cell.Id + " " + cell.Value);
         }
 
         /// <summary>

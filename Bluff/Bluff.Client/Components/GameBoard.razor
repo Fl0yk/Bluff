@@ -49,19 +49,23 @@ else
             {
                 @for (int i = 1; i < 6; i++)
                 {
-                    int ind = i;
+                    int ind = i - 1;
                     <div class="cube" @onclick="() => SelectCube(ind)">
                         @i
                     </div>
                 }
-                <div class="cube" @onclick="() => SelectCube(6)">
+                <div class="cube" @onclick="() => SelectCube(5)">
                     *
                 </div>
                 <br />
             }
+            else if(GameModel.State == GameState.EndGame)
+            {
+                <p>Победил @GameModel?.WinnerName</p>
+            }
             else
             {
-                @cube
+                @GameModel.CountOfCubes
             }
         </div>
     </div>
@@ -92,6 +96,7 @@ else
 
     protected async override Task OnInitializedAsync()
     {
+        GameModel.UpdatePage += this.StateHasChanged;
         //Подписка на получение ставки
         InGameService.CreateConnection("GetNewBet", (Bet newBet, string nextUser) =>
         {
@@ -112,7 +117,7 @@ else
         
         cube = cubeValue;
         cubeSelected = true;
-        selectedIsStar = cube == 6;
+        selectedIsStar = cube == 5;
     }
 
     public void SelectCount(int cellId)

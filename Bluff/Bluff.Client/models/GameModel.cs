@@ -7,6 +7,8 @@ namespace Bluff.Client.models
         public Board GameBoard { get; set; }
         //Название игры(группы, сервера)
 
+        public event Action UpdatePage;
+
         private string _gameName;
         //Вы спросите, зачем
         //А я отвечу, чтоб только 1 раз инициализировать 
@@ -22,14 +24,31 @@ namespace Bluff.Client.models
         }
         //Имя нынешнего клиента
         public string? CurUser { get; set; }
+        //Имя победителя
+        public string? WinnerName {  get; set; }
         //Храним имена клиентов
         public List<string> Clients { get; set; }
-        public GameState State { get; set; }
+        private GameState _state;
+        public GameState State 
+        { get
+            {
+                return this._state;
+            }
+            set
+            {
+                if(this._state != value)
+                {
+                    this._state= value;
+                    UpdatePage?.Invoke();
+                }
+            }
+        }
         public Bet? Bet { get; set; }
+        //Количество кубиков в игре
+        public int CountOfCubes {  get; set; }
 
         public GameModel() 
         {
-            _gameName = string.Empty;
             GameBoard = new Board();
             Clients = new();
             State = GameState.WaitStart;
@@ -39,7 +58,7 @@ namespace Bluff.Client.models
         {
             if(CurUser == firstClient)
             {
-                State = GameState.Bet;
+                State = GameState.ChangeMenu;
             }
             else
             {
@@ -52,7 +71,7 @@ namespace Bluff.Client.models
             Bet = newBet;
             
             if (CurUser == nextUser)
-                State = GameState.Bet;
+                State = GameState.ChangeMenu;
             else
                 State = GameState.ExpectBet;
         }
@@ -61,8 +80,10 @@ namespace Bluff.Client.models
     public enum GameState
     {
         WaitStart,
+        ChangeMenu,
         ExpectBet,
-        Bet
+        Bet,
+        EndGame
     }
 
 }
