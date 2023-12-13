@@ -16,6 +16,7 @@ namespace Bluff.Client.Services.InGame
                 .WithUrl(hubUrl)
                 .Build();
         }
+
         public async Task<bool> ConnectToServerRequest(string username, string groupName)
         {
             try

@@ -1,5 +1,6 @@
 ﻿<link href="css/cite.css" rel="stylesheet" />
 @page "/"
+@inject IJSRuntime JSRuntime
 
 
 <PageTitle>Bluff</PageTitle>
@@ -37,5 +38,14 @@
 
 @code{
     bool ruleOrServers = true;
+
+    protected async override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JSRuntime.InvokeVoidAsync("import", "/js/background.js");
+            await JSRuntime.InvokeVoidAsync("import", "/js/index.js");
+        }
+    }
 }
 

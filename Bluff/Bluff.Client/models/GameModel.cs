@@ -5,17 +5,32 @@ namespace Bluff.Client.models
     public class GameModel
     {
         public Board GameBoard { get; set; }
-        public string GameName { get; set; }
+        //Название игры(группы, сервера)
+
+        private string _gameName;
+        //Вы спросите, зачем
+        //А я отвечу, чтоб только 1 раз инициализировать 
+        public string GameName { 
+            get
+            {
+                return _gameName;
+            }
+            set
+            {
+                _gameName ??= value;
+            }
+        }
+        //Имя нынешнего клиента
         public string? CurUser { get; set; }
-        public List<Bluff.Domain.Client> Clients { get; set; }
-        GameState State { get; set; }
+        //Храним имена клиентов
+        public List<string> Clients { get; set; }
+        public GameState State { get; set; }
         public Bet? Bet { get; set; }
 
-        public GameModel(string gameName) 
+        public GameModel() 
         {
             GameBoard = new Board();
             Clients = new();
-            GameName = gameName;
             State = GameState.WaitStart;
         }
 
@@ -29,6 +44,16 @@ namespace Bluff.Client.models
             {
                 State = GameState.ExpectBet;
             }
+        }
+
+        public void GetNewBet(Bet newBet, string nextUser)
+        {
+            Bet = newBet;
+            
+            if (CurUser == nextUser)
+                State = GameState.Bet;
+            else
+                State = GameState.ExpectBet;
         }
     }
 

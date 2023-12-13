@@ -1,59 +1,127 @@
-﻿@inject IInGameHubService inGameService
+﻿@inject IInGameHubService InGameService
+@inject GameModel GameModel
 
-@if(isBetter)
+@if (GameModel.State == GameState.Bet && cubeSelected)
 {
-    <p>Введите ставку:</p>
-    <br />
-    <input id="place" type="text" required @bind-value="place" />
-    <br />
-    <input id="userName" type="text" required @bind-value="cube" />
-    <br />
-    <input type="button" id="sendBtn" value="Сделать ставку" @onclick="(PlaceBet)" />
-}
+    <div class="container">
+        @foreach (var cell in GameModel.GameBoard.AvailableCells(minSelectCount, selectedIsStar))
+        {
+            <div class="item @((cell.IsAvailable && cell.IsStar == selectedIsStar) ? "available" : "")"
+                 style="grid-column: @(cell.Position.column + 1)/ @(cell.Position.column + 2);
+                                    grid-row: @(cell.Position.row + 1)/ @(cell.Position.row + 2);"
+                 @onclick="() => SelectCount(cell.Id)">
 
-<p>Последняя ставка</p>
-<p>Место: @place Значение: @cube</p>
+                @cell.Value
+                @if (cell.IsStar)
+                {
+                    <p>*</p>
+                }
+            </div>
+        }
+        <div class="center">
+            @cube
+        </div>
+    </div>
+}
+else
+{
+    <div class="container">
+        @foreach (var cell in GameModel.GameBoard.Cells)
+        {
+            <div class="item" style="grid-column: @(cell.Position.column + 1)/ @(cell.Position.column + 2);
+                                grid-row: @(cell.Position.row + 1)/ @(cell.Position.row + 2);">
+                @if(count == cell.Id)
+                {
+                    <p>Тут @cube)</p>
+                }
+                else
+                {
+                    @cell.Value
+                    @if (cell.IsStar)
+                    {
+                        <p>*</p>
+                    }
+                }
+            </div>
+        }
+        <div class="center">
+            @if (GameModel.State == GameState.Bet)
+            {
+                @for (int i = 1; i < 6; i++)
+                {
+                    int ind = i;
+                    <div class="cube" @onclick="() => SelectCube(ind)">
+                        @i
+                    </div>
+                }
+                <div class="cube" @onclick="() => SelectCube(6)">
+                    *
+                </div>
+                <br />
+            }
+            else
+            {
+                @cube
+            }
+        </div>
+    </div>
+}
 
 
 @code {
-    [Parameter]
-    public bool isBetter { get; set; }
-    [Parameter]
-    public string Username { get; set; }
-    [Parameter]
-    public string GroupName { get; set; }
-    private int place;
+    private int count;
     private int cube;
+    private bool selectedIsStar;
+    private int minSelectCount;
+
+    private bool cubeSelected = false;
 
     public void PlaceBet()
     {
-        Console.WriteLine("Group: " + GroupName);
-        if(inGameService.PlaceABetRequest(GroupName, Username, cube, place).Result)
+        if(InGameService.PlaceABetRequest(GameModel.GameName, GameModel.CurUser!, cube, count).Result)
         {
             Console.WriteLine("Good");
         }
         else
         {
             Console.WriteLine("Bad");
-            Console.WriteLine(inGameService.ErrorMessage);
+            Console.WriteLine(InGameService.ErrorMessage);
         }
-        Console.WriteLine("After place a bet");
+        Console.WriteLine("After count a bet");
     }
 
     protected async override Task OnInitializedAsync()
     {
         //Подписка на получение ставки
-        inGameService.CreateConnection("GetNewBet", (Bet newBet, string nextUser) =>
+        InGameService.CreateConnection("GetNewBet", (Bet newBet, string nextUser) =>
         {
-            place = newBet.Count;
+            GameModel.GetNewBet(newBet, nextUser);
+            count = newBet.Count;
             cube = newBet.CubeValue;
-
-            isBetter = Username == nextUser;
-            Console.WriteLine("Get new bet");
 
             this.StateHasChanged();
         });
 
-        await inGameService.ConnectToHub();
+        await InGameService.ConnectToHub();
+    }
+
+    public void SelectCube(int cubeValue)
+    {
+        //Если выбрали больше, чем было, то можно выбрать ту же ячейку
+        minSelectCount = (cubeValue > cube) ? count : count + 1;
+        
+        cube = cubeValue;
+        cubeSelected = true;
+        selectedIsStar = cube == 6;
+    }
+
+    public void SelectCount(int cellId)
+    {
+        if (cellId < minSelectCount)
+            return;
+
+        count = cellId;
+        PlaceBet();
+        cubeSelected = false;
     }
 }
