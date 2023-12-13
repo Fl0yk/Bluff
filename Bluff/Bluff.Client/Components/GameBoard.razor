@@ -7,16 +7,13 @@
         @* Заполняю поле так, чтоб были выделенные допустимые ячейки *@
         @foreach (var cell in GameModel.GameBoard.AvailableCells(minSelectCount, selectedIsStar))
         {
-            <div class="item @((cell.IsAvailable && cell.IsStar == selectedIsStar) ? "available" : "")"
+            <div class="item @((cell.IsAvailable && cell.IsStar == selectedIsStar) ? "available" : "") 
+                 @(cell.IsStar ? "star" : "")"
                  style="grid-column: @(cell.Position.column + 1)/ @(cell.Position.column + 2);
                                     grid-row: @(cell.Position.row + 1)/ @(cell.Position.row + 2);"
                  @onclick="() => SelectCount(cell.Id, cell.Value, cell.IsStar)">
 
                 @cell.Value
-                @if (cell.IsStar) @* Если звезда, то пишу звездочку *@
-                {
-                    <p>*</p>
-                }
             </div>
         }
         @* В центре при выборе ячейки пишем значение кубика *@
@@ -31,19 +28,18 @@ else
     <div class="container">
         @foreach (var cell in GameModel.GameBoard.Cells)
         {
-            <div class="item" style="grid-column: @(cell.Position.column + 1)/ @(cell.Position.column + 2);
+            <div class="item @(cell.IsStar ? "star" : "")"
+                 style="grid-column: @(cell.Position.column + 1)/ @(cell.Position.column + 2);
                                 grid-row: @(cell.Position.row + 1)/ @(cell.Position.row + 2);">
                 @if(curId == cell.Id)
                 {
-                    <p>Тут @(cube + 1))</p>
+                    <div class="current" style="@GetMainCubePath(cube + 1)">
+
+                    </div>
                 }
                 else
                 {
                     @cell.Value
-                    @if (cell.IsStar)
-                    {
-                        <p>*</p>
-                    }
                 }
             </div>
         }
@@ -55,23 +51,27 @@ else
                 @for (int i = 1; i < 6; i++)
                 {
                     int ind = i - 1;
-                    <div class="cube" @onclick="() => SelectCube(ind)">
-                        @i
+                    <div class="cube"
+                        style="@GetMainCubePath(i)"
+                        @onclick="() => SelectCube(ind)">
+                        
                     </div>
                 }
                 @* Отдельно сделал звездочку *@
-                <div class="cube" @onclick="() => SelectCube(5)">
-                    *
+                <div class="cube"
+                     style="@GetMainCubePath(6)"
+                    @onclick="() => SelectCube(5)">
+                    
                 </div>
                 <br />
             }
             else if(GameModel.State == GameState.EndGame) @* Если игра закончилась, то пишем победителя *@
             {
-                <p>Победил @GameModel?.WinnerName</p>
+                <p class="center">Победил @GameModel?.WinnerName</p>
             }
             else @* Во всех остальных случаях выводим количество кубиков в игре *@
             {
-                <p>Кубиков в игре: @GameModel.CountOfCubes</p>
+                <p class="center">Кубиков в игре: @GameModel.CountOfCubes</p>
             }
         </div>
     </div>
@@ -147,4 +147,11 @@ else
         PlaceBet();
         cubeSelected = false;
     }
+
+    public string GetMainCubePath(int num)
+    {
+        return "background-image: url('../images/main_cube_" + num + ".png');";
+    }
+
+
 }

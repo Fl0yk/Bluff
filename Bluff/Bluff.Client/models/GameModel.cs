@@ -68,6 +68,8 @@ namespace Bluff.Client.models
                 State = GameState.ExpectBet;
             }
 
+            //UpdateCountOfCubs();
+            
             Bet = null;
             UpdatePage?.Invoke();
         }
@@ -91,14 +93,20 @@ namespace Bluff.Client.models
                 Cubes = c.Cubes.ToArray()
             }));
 
+            UpdateCountOfCubs();
+
+            UpdatePage?.Invoke();
+            UpdatePlayers?.Invoke();
+        }
+
+        private void UpdateCountOfCubs()
+        {
             CountOfCubes = 0;
 
             foreach (Player player in Clients)
             {
                 CountOfCubes += player.CubeCount;
             }
-
-            UpdatePlayers?.Invoke();
         }
     }
 

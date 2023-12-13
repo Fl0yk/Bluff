@@ -1,6 +1,12 @@
 ﻿@page "/game/{groupName}"
 @inject IInGameHubService inGameService
 @inject GameModel GameModel
+@inject IJSRuntime JSRuntime
+
+<svg id="background">
+    <g id="hexGrid"></g>
+    @* <g id="bet"></g> *@
+</svg>
 
 <h1>@groupName</h1>
 
@@ -18,18 +24,18 @@
 }
 else 
 {
-    @* Тут список всех игроков *@
-    <p>
-        Игроки:
-    </p>
-    <ul>
-        @foreach (var client in GameModel.Clients)
-        {
-            <li>client - @client.Name</li>
-        }
-    </ul>
     @if (readyUsers != GameModel.Clients.Count) @* Если пользователь подключился, но игроков для начала недостаточно *@
     {
+        @* Тут список всех игроков *@
+        <p>
+            Игроки:
+        </p>
+        <ul>
+            @foreach (var client in GameModel.Clients)
+            {
+                <li>client - @client.Name</li>
+            }
+        </ul>
         <div>
             <input type="button" id="sendBtn" value="Готов" @onclick="(async () => await UserReadyRequest())" disabled="@(!isDisplay)" />
         </div>
@@ -152,6 +158,14 @@ else
 
         // получаем всех пользователей
         await inGameService.GetClientsRequest(GameModel.GameName);
+    }
+
+    protected async override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JSRuntime.InvokeVoidAsync("import", "/js/background.js");
+        }
     }
 
     // подключение к хабу
