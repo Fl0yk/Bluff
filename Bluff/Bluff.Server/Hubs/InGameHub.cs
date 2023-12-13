@@ -37,16 +37,13 @@ namespace Bluff.Server.Hubs
             //Добавляем клиента именно к группе SignalR
             await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
 
+            await Clients.Groups(groupName).SendAsync("HandleUserConnected", client);
+
             // если игроков достаточно для начала - начинаем игру
             // иначе - отправляем всем пользователем подключенных игроков для отрисовки
             if (_groupService.IsGameReady(groupName))
             {
-               
                 await Clients.Groups(groupName).SendAsync("HandleUserReadyCheck", client);
-            }
-            else
-            {
-                await Clients.Groups(groupName).SendAsync("HandleUserConnected", client);
             }
         }
 
@@ -63,22 +60,19 @@ namespace Bluff.Server.Hubs
 
             // увеличение количества клиентов нажавших готов
             game.ReadyUsers++;
+
+            // возвращаем количество готовых пользователей
+            await Clients.Groups(game.GroupName).SendAsync("HandleUserReady", game.ReadyUsers);
+
             // начало игры, если все пользователи нажали готов
-            // иначе - просто обработка готовности
             if (game.ReadyUsers == game.UserToStart)
             {
                 // рандомим кубики
                 RandomUserCubes(game);
 
-                // получаем того, кто будет начинать ход
-                var turnBeginner = game.Clients[game.TurnBeginnerIndex];
-
                 // начинаем игру
-                await Clients.Groups(game.GroupName).SendAsync("HandleGameStart", turnBeginner);
+                await Clients.Groups(game.GroupName).SendAsync("HandleGameStart", game.Clients.FirstOrDefault());
             }
-            else 
-                // возвращаем количество готовых пользователей
-                await Clients.Groups(game.GroupName).SendAsync("HandleUserReady", game.ReadyUsers);
         }
 
         private void RandomUserCubes(Game game)
@@ -124,10 +118,19 @@ namespace Bluff.Server.Hubs
 
             //Получаем индекс следующего игрока в коллекции и его имя
             int indexOfNextUser = (curGame.Clients.FindIndex(c => c.Name == username) + 1) % curGame.Clients.Count;
+
+            // Посокльку следующий игрок может выбыть, то
+            // ищем следующего действующего игрока(количество кубиков больше 0).
+            // Предполагается, что даже если пользователь выйдет в списке клиентов
+            // останется сущность с 0 кубиков.
+            while (curGame.Clients[indexOfNextUser].CubesCount <= 0)
+                indexOfNextUser = (indexOfNextUser + 1) % curGame.Clients.Count;
+
             string nextUser = curGame.Clients[indexOfNextUser].Name;
 
             //Сохраняем в игре новую ставку
             curGame.Bet = newBet;
+            curGame.BetAuthor = curGame.Clients.FirstOrDefault(c => c.Name == username);
 
             //Отправляем всем клиентам группы в метод GetNewBet сделанную ставку и имя следующего игрока
             await Clients.Groups(curGame.GroupName).SendAsync("GetNewBet", newBet, nextUser);
@@ -178,6 +181,7 @@ namespace Bluff.Server.Hubs
                 
 
             int difference = appearedCubesNumber - bet.Count;
+            Client? TurnWinner = null;
 
             // Определние того, кто будет терять кубики
             if (difference > 0)
@@ -190,6 +194,7 @@ namespace Bluff.Server.Hubs
                     return;
                 }
 
+                TurnWinner = curGame.Clients.FirstOrDefault(c => c.Name == BetterUsername);
                 // отнимаем кубики
                 challenger.CubesCount -= difference;
             }
@@ -204,7 +209,8 @@ namespace Bluff.Server.Hubs
                 }
 
                 // отнимаем кубики
-                better.CubesCount -= difference;
+                better.CubesCount += difference;
+                TurnWinner = curGame.Clients.FirstOrDefault(c => c.Name == ChallengerUsername);
             }
             else
             {
@@ -212,6 +218,8 @@ namespace Bluff.Server.Hubs
                 foreach (var client in curGame.Clients)
                     if (client.Name != BetterUsername)
                         client.CubesCount--;
+
+                TurnWinner = curGame.Clients.FirstOrDefault(c => c.Name == BetterUsername);
             }
 
 
@@ -233,17 +241,9 @@ namespace Bluff.Server.Hubs
             {
                 // отбор начинающего ход
 
-                // Получаем индекс следующего игрока в коллекции и его имя
-                int indexOfNextUser = (curGame.TurnBeginnerIndex + 1) % curGame.Clients.Count;
+                // поиск следующего игрока писать сюда
 
-                // Посокльку следующий игрок может выбыть, то
-                // ищем следующего действующего игрока(количество кубиков больше 0).
-                // Предполагается, что даже если пользователь выйдет в списке клиентов
-                // останется сущность с 0 кубиков.
-                while (curGame.Clients[indexOfNextUser].CubesCount <= 0)
-                    indexOfNextUser = (indexOfNextUser + 1) % curGame.Clients.Count;
-
-                await Clients.Groups(curGame.GroupName).SendAsync("HandleGameStart", curGame.Clients[indexOfNextUser]);
+                await Clients.Groups(curGame.GroupName).SendAsync("HandleGameStart", TurnWinner);
             }
             else if (playersLeft == 1)
             {
