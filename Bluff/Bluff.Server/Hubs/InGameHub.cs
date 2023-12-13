@@ -160,9 +160,23 @@ namespace Bluff.Server.Hubs
             // В массиве по 0 индексу будет лежать число 3, а по индексу 5 - 2
 
             // Подсчет количевства выпавших кубиков со значением, указанным в ставке
-            foreach (var client in  curGame.Clients)
-                appearedCubesNumber += client.Cubes[bet.CubeValue];
-            
+            // Условный оператор определяет способ подсчета - если бы его не было,
+            // при ставке на звезду, она считалась бы 2 раза
+            if (bet.CubeValue != 5)
+            {
+                // если поставили не звезду - прибавляем еще количество
+                // кубиков со звездой
+                foreach (var client in  curGame.Clients)
+                    appearedCubesNumber += client.Cubes[bet.CubeValue] + client.Cubes[5];
+            }
+            else
+            {
+                // если поставили звезду - считаем только ее
+                foreach (var client in curGame.Clients)
+                    appearedCubesNumber += client.Cubes[bet.CubeValue];
+            }
+                
+
             int difference = appearedCubesNumber - bet.Count;
 
             // Определние того, кто будет терять кубики
