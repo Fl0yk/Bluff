@@ -1,3 +1,4 @@
+using Blazored.Modal;
 using Bluff.Client;
 using Bluff.Client.models;
 using Bluff.Client.Services.InGame;
@@ -14,5 +15,7 @@ builder.Services.AddScoped<IServersHubService, ServersHubService>();
 builder.Services.AddScoped<GameModel>();
 
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+
+builder.Services.AddBlazoredModal();
 
 await builder.Build().RunAsync();

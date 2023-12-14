@@ -12,15 +12,18 @@
 
 @if (GameModel.CurUser is null) @* Если польльзователь еще не ввел имя *@
 {
-    <p>Введите имя пользователя:</p>
-    <br />
-    <input id="userName" type="text" required @bind-value="usernameInput" />
-    <br />
-    <br />
-
-    <div>
-        <input type="button" id="sendBtn" value="Подключиться к игре" @onclick="(() =>{ ConnectToServerRequest().Wait();})" />
-    </div>
+    <Card Color="CardColor.Secondary" Class="mb-4" Style="width:18rem;">
+        <CardHeader>Пользователь</CardHeader>
+        <CardBody>
+            <p>Введите имя пользователя:</p>
+            <br />
+            <input id="userName" type="text" required @bind-value="usernameInput" />
+            <br />
+        </CardBody>
+        <CardFooter>
+            <input type="button" id="sendBtn" value="Подключиться к игре" @onclick="(() =>{ ConnectToServerRequest().Wait();})" />
+        </CardFooter>
+        </Card>
 }
 else 
 {
@@ -36,10 +39,23 @@ else
                 <li>client - @client.Name</li>
             }
         </ul>
-        <div>
-            <input type="button" id="sendBtn" value="Готов" @onclick="(async () => await UserReadyRequest())" disabled="@(!isDisplay)" />
+
+        <div class="modal fade show" id="myModal" style="display:block; background-color: rgba(10,10,10,.8)"
+             aria-modal="true" role="dialog">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title" style="color: black">Подтверждение</h4>
+                    </div>
+                    <div class="modal-body">
+                        <p style="color: black">Готово пользователей @readyUsers</p>
+                    </div>
+                    <div class="modal-footer">
+                        <input type="button" id="sendBtn" value="Готов" @onclick="(async () => await UserReadyRequest())" disabled="@(!isDisplay)" />
+                    </div>
+                </div>
+            </div>
         </div>
-        <p>Готово пользователей @readyUsers</p>
     }
     else @* Если пользователь подключился и игра уже началась *@
     {

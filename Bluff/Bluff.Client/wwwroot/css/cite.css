@@ -151,3 +151,56 @@ div.cube {
     background-position: center center;
     background-repeat: no-repeat;
 }
+
+.serverName {
+    font-size: 20px;
+    text-decoration: none;
+    color: #d0e3f7;
+    margin: 20px;
+}
+
+    .serverName:hover {
+        color: #57b9ff;
+    }
+
+table {
+    width: 100%;
+}
+
+/* CSS стили для модального окна */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgb(0,0,0);
+    background-color: rgba(0,0,0,0.4);
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 600px;
+    position: relative;
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+    .close:hover,
+    .close:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+    }

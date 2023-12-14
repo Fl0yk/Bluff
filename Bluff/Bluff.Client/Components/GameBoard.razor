@@ -1,5 +1,6 @@
 ﻿@inject IInGameHubService InGameService
 @inject GameModel GameModel
+@inject IJSRuntime JS
 
 @if (GameModel.State == GameState.Bet && cubeSelected) @* Если игрок делает ставку и значение кубика уже выбрал *@
 {
@@ -101,6 +102,8 @@ else
 
     protected async override Task OnInitializedAsync()
     {
+        await JS.InvokeVoidAsync("generateHexGrid");
+
         GameModel.UpdatePage += this.StateHasChanged;
         //Подписка на получение ставки
         InGameService.CreateConnection("GetNewBet", (Bet newBet, string nextUser) =>
